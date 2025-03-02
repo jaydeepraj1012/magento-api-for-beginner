@@ -1,0 +1,36 @@
+<?xml version="1.0"?>
+<routes xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:module:Magento_Webapi/etc/webapi.xsd">
+    <route method="GET" url="/V1/hello">
+        <service class="Letscms\TestApi\Api\HelloInterface" method="getMessage"/>
+        <resources>
+            <resource ref="anonymous"/>
+        </resources>
+    </route>
+     <route method="POST" url="/V1/hello">
+        <service class="Letscms\TestApi\Api\HelloInterface" method="setMessage"/>
+        <resources>
+            <resource ref="anonymous"/>
+        </resources>
+    </route>
+    <route method="GET" url="/V1/productdata">
+        <service class="Letscms\TestApi\Api\ProductListInterface" method="getData"/>
+        <resources>
+            <resource ref="anonymous"/>
+        </resources>
+    </route>
+    <route method="POST" url="/V1/productprice">
+        <service class="Letscms\TestApi\Api\ProductsInterfaces" method="updatePrice"/>
+        <resources>
+            <resource ref="anonymous"/>
+        </resources>
+    </route>
+
+    <route url="/V1/productqty" method="POST">
+        <service class="Letscms\TestApi\Api\ProductsInterfaces" method="updateQty"/>
+        <resources>
+            <resource ref="anonymous"/>
+        </resources>
+    </route>
+
+
+</routes>
