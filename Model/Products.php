@@ -2,33 +2,40 @@
 namespace Letscms\TestApi\Model;
 
 use Letscms\TestApi\Api\ProductsInterfaces;
-use Magento\Catalog\Api\ProductRepositoryInterface;
-use Magento\CatalogInventory\Api\StockRegistryInterface;
-use Magento\Framework\Exception\NoSuchEntityException;
-use Magento\Catalog\Api\Data\ProductInterface;
-use Magento\Catalog\Api\CategoryRepositoryInterface;
-use Magento\Catalog\Model\ResourceModel\Category\CollectionFactory;
-use Magento\Customer\Api\CustomerRepositoryInterface;
+use Magento\Catalog\Model\ProductFactory;
+use Magento\Catalog\Model\ResourceModel\Product as ProductResource;
+use Magento\CatalogInventory\Model\Stock\StockItemRepository;
+use Magento\CatalogInventory\Model\ResourceModel\Stock\Item as StockResource;
+use Magento\Customer\Model\CustomerFactory;
+use Magento\Customer\Model\ResourceModel\Customer as CustomerResource;
+use Magento\Catalog\Model\ResourceModel\Category\CollectionFactory as CategoryCollectionFactory;
 
 class Products implements ProductsInterfaces
 {
-    protected $productRepository;
-    protected $stockRegistry;
-    protected $customerRepository;
+    protected $productFactory;
+    protected $productResource;
+    protected $stockItemRepository;
+    protected $stockResource;
+    protected $customerFactory;
+    protected $customerResource;
     protected $categoryCollectionFactory;
-    protected $categoryRepository;
 
     public function __construct(
-        ProductRepositoryInterface $productRepository,
-        StockRegistryInterface $stockRegistry,
-        CollectionFactory $categoryCollectionFactory,
-        CustomerRepositoryInterface $customerRepository,
-        CategoryRepositoryInterface $categoryRepository
+        ProductFactory $productFactory,
+        ProductResource $productResource,
+        StockItemRepository $stockItemRepository,
+        StockResource $stockResource,
+        CustomerFactory $customerFactory,
+        CustomerResource $customerResource,
+        CategoryCollectionFactory $categoryCollectionFactory
     ) {
-        $this->productRepository = $productRepository;
-        $this->stockRegistry = $stockRegistry;
+        $this->productFactory = $productFactory;
+        $this->productResource = $productResource;
+        $this->stockItemRepository = $stockItemRepository;
+        $this->stockResource = $stockResource;
+        $this->customerFactory = $customerFactory;
+        $this->customerResource = $customerResource;
         $this->categoryCollectionFactory = $categoryCollectionFactory;
-        $this->categoryRepository = $categoryRepository;
     }
 
     /**
@@ -40,13 +47,17 @@ class Products implements ProductsInterfaces
     public function updatePrice($sku, $price)
     {
         try {
-            $product = $this->productRepository->get($sku);
+            $product = $this->productFactory->create();
+            $this->productResource->load($product, $sku, 'sku');
+
+            if (!$product->getId()) {
+                return ["error" => "Product not found: " . $sku];
+            }
+
             $product->setPrice($price);
-            $this->productRepository->save($product);
+            $this->productResource->save($product);
 
             return ["message" => "Price updated successfully for SKU: " . $sku];
-        } catch (NoSuchEntityException $e) {
-            return ["error" => "Product not found: " . $sku];
         } catch (\Exception $e) {
             return ["error" => "Error updating price: " . $e->getMessage()];
         }
@@ -59,17 +70,18 @@ class Products implements ProductsInterfaces
      * @return array
      */
     public function updateQty($sku, $qty)
-    {       
-        try {            
-            $product = $this->productRepository->get($sku);
-            $stockItem = $this->stockRegistry->getStockItemBySku($sku);
+    {
+        try {
+            $stockItem = $this->stockItemRepository->get($sku);
+            if (!$stockItem->getItemId()) {
+                return ["error" => "Stock item not found for SKU: " . $sku];
+            }
+
             $stockItem->setQty($qty);
             $stockItem->setIsInStock($qty > 0);
-            $this->stockRegistry->updateStockItemBySku($sku, $stockItem);
+            $this->stockResource->save($stockItem);
 
             return ["message" => "Quantity updated successfully."];
-        } catch (NoSuchEntityException $e) {
-            return ["error" => "Product with SKU '{$sku}' not found."];
         } catch (\Exception $e) {
             return ["error" => "Error updating quantity: " . $e->getMessage()];
         }
@@ -78,15 +90,26 @@ class Products implements ProductsInterfaces
     /**
      * Get product info by SKU
      * @param string $skuid    
-     * @return ProductInterface
-     * @throws \Magento\Framework\Exception\NoSuchEntityException
+     * @return array
      */
-    public function getProductBySku($skuid): ProductInterface
+    public function getProductBySku($skuid)
     {
         try {
-            return $this->productRepository->get($skuid);
-        } catch (NoSuchEntityException $e) {
-            throw new \Magento\Framework\Exception\NoSuchEntityException(__('Product not found.'));
+            $product = $this->productFactory->create();
+            $this->productResource->load($product, $skuid, 'sku');
+
+            if (!$product->getId()) {
+                return ["error" => "Product not found."];
+            }
+
+            return [
+                'id' => $product->getId(),
+                'sku' => $product->getSku(),
+                'name' => $product->getName(),
+                'price' => $product->getPrice()
+            ];
+        } catch (\Exception $e) {
+            return ["error" => "Error fetching product: " . $e->getMessage()];
         }
     }
 
@@ -115,7 +138,8 @@ class Products implements ProductsInterfaces
 
         return $categories;
     }
-     /**
+
+    /**
      * Get customer info by ID
      * @param int $id  
      * @return array
@@ -123,7 +147,12 @@ class Products implements ProductsInterfaces
     public function getCustomerInfoById($id)
     {
         try {
-            $customer = $this->customerRepository->getById($id);
+            $customer = $this->customerFactory->create();
+            $this->customerResource->load($customer, $id);
+
+            if (!$customer->getId()) {
+                return ['error' => "Customer with ID {$id} not found."];
+            }
 
             return [
                 'id' => $customer->getId(),
@@ -132,8 +161,6 @@ class Products implements ProductsInterfaces
                 'email' => $customer->getEmail(),
                 'created_at' => $customer->getCreatedAt()
             ];
-        } catch (NoSuchEntityException $e) {
-            return ['error' => "Customer with ID {$id} not found."];
         } catch (\Exception $e) {
             return ['error' => "Error fetching customer data: " . $e->getMessage()];
         }
