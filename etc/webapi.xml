@@ -37,14 +37,26 @@
             <resource ref="anonymous"/>
         </resources>
     </route>
-     <route url="/V1/custom/categories" method="GET">
+    <route url="/V1/custom/categories" method="GET">
         <service class="Letscms\TestApi\Api\ProductsInterfaces" method="getCategoriesList"/>
         <resources>
             <resource ref="anonymous"/>
         </resources>
     </route>
-      <route url="/V1/custom/customer/" method="GET">
+    <route url="/V1/custom/customer/" method="GET">
         <service class="Letscms\TestApi\Api\ProductsInterfaces" method="getCustomerInfoById"/>
+        <resources>
+            <resource ref="anonymous"/>
+        </resources>
+    </route>
+    <route url="/V1/custom/orders/count" method="GET">
+        <service class="Letscms\TestApi\Api\ProductsInterfaces" method="getOrderCount"/>
+        <resources>
+            <resource ref="anonymous"/>
+        </resources>
+    </route>
+       <route url="/V1/custom/customer/last-order" method="GET">
+        <service class="Letscms\TestApi\Api\ProductsInterfaces" method="getCustomerlastOrder"/>
         <resources>
             <resource ref="anonymous"/>
         </resources>

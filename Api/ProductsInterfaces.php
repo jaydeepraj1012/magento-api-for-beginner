@@ -40,4 +40,19 @@ interface ProductsInterfaces
    * @return array
    */
   public function getCustomerInfoById($id);
+
+   /**
+   * Get all Customer Info list
+  
+   * @return string
+   */
+  public function getOrderCount();
+  /**
+   * Get  Customer last order
+   *  * @param int $id  
+   * @return array
+   */
+  public function getCustomerlastOrder($id);
+
+
 }

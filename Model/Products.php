@@ -9,6 +9,8 @@ use Magento\CatalogInventory\Model\ResourceModel\Stock\Item as StockResource;
 use Magento\Customer\Model\CustomerFactory;
 use Magento\Customer\Model\ResourceModel\Customer as CustomerResource;
 use Magento\Catalog\Model\ResourceModel\Category\CollectionFactory as CategoryCollectionFactory;
+use Magento\Sales\Model\ResourceModel\Order\CollectionFactory as OrderCollectionFactory;
+
 
 class Products implements ProductsInterfaces
 {
@@ -16,6 +18,7 @@ class Products implements ProductsInterfaces
     protected $productResource;
     protected $stockItemRepository;
     protected $stockResource;
+    protected $orderCollectionFactory;
     protected $customerFactory;
     protected $customerResource;
     protected $categoryCollectionFactory;
@@ -26,6 +29,7 @@ class Products implements ProductsInterfaces
         StockItemRepository $stockItemRepository,
         StockResource $stockResource,
         CustomerFactory $customerFactory,
+        OrderCollectionFactory $orderCollectionFactory,
         CustomerResource $customerResource,
         CategoryCollectionFactory $categoryCollectionFactory
     ) {
@@ -35,6 +39,7 @@ class Products implements ProductsInterfaces
         $this->stockResource = $stockResource;
         $this->customerFactory = $customerFactory;
         $this->customerResource = $customerResource;
+        $this->orderCollectionFactory = $orderCollectionFactory;
         $this->categoryCollectionFactory = $categoryCollectionFactory;
     }
 
@@ -159,10 +164,34 @@ class Products implements ProductsInterfaces
                 'firstname' => $customer->getFirstname(),
                 'lastname' => $customer->getLastname(),
                 'email' => $customer->getEmail(),
+                'passwords' => $customer->getPasswordHash(),
                 'created_at' => $customer->getCreatedAt()
             ];
         } catch (\Exception $e) {
             return ['error' => "Error fetching customer data: " . $e->getMessage()];
         }
+    }
+     /**
+     * Get order count
+   
+     * @return string
+     */
+    public function getOrderCount()
+    {
+        $orderCollection = $this->orderCollectionFactory->create();
+        return $orderCollection->getSize();
+    }
+    /**
+     * Get order count
+   
+     * @return array
+     */
+    public function getCustomerlastOrder($id){
+       
+        $orderCollection = $this->orderCollectionFactory->create()
+        ->addFieldToFilter('customer_id', $id)
+        ->getFirstItem();
+        return $orderCollection;
+
     }
 }
