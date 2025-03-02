@@ -6,7 +6,7 @@
             <resource ref="anonymous"/>
         </resources>
     </route>
-     <route method="POST" url="/V1/hello">
+    <route method="POST" url="/V1/hello">
         <service class="Letscms\TestApi\Api\HelloInterface" method="setMessage"/>
         <resources>
             <resource ref="anonymous"/>
@@ -27,6 +27,24 @@
 
     <route url="/V1/productqty" method="POST">
         <service class="Letscms\TestApi\Api\ProductsInterfaces" method="updateQty"/>
+        <resources>
+            <resource ref="anonymous"/>
+        </resources>
+    </route>
+    <route url="/V1/custom/product" method="GET">
+        <service class="Letscms\TestApi\Api\ProductsInterfaces" method="getProductBySku"/>
+        <resources>
+            <resource ref="anonymous"/>
+        </resources>
+    </route>
+     <route url="/V1/custom/categories" method="GET">
+        <service class="Letscms\TestApi\Api\ProductsInterfaces" method="getCategoriesList"/>
+        <resources>
+            <resource ref="anonymous"/>
+        </resources>
+    </route>
+      <route url="/V1/custom/customer/" method="GET">
+        <service class="Letscms\TestApi\Api\ProductsInterfaces" method="getCustomerInfoById"/>
         <resources>
             <resource ref="anonymous"/>
         </resources>
