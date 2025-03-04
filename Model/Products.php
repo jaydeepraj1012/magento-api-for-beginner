@@ -10,6 +10,7 @@ use Magento\Customer\Model\CustomerFactory;
 use Magento\Customer\Model\ResourceModel\Customer as CustomerResource;
 use Magento\Catalog\Model\ResourceModel\Category\CollectionFactory as CategoryCollectionFactory;
 use Magento\Sales\Model\ResourceModel\Order\CollectionFactory as OrderCollectionFactory;
+use Magento\Sales\Api\Data\OrderInterface;
 
 
 class Products implements ProductsInterfaces
@@ -182,16 +183,33 @@ class Products implements ProductsInterfaces
         return $orderCollection->getSize();
     }
     /**
-     * Get order count
-   
-     * @return array
+     * Get Customer's last order
+     * 
+     * @param int $id
+     * @return OrderInterface|null
      */
-    public function getCustomerlastOrder($id){
-       
-        $orderCollection = $this->orderCollectionFactory->create()
+    public function getCustomerLastOrder($id): ?array
+{
+    $collection = $this->orderCollectionFactory->create()
         ->addFieldToFilter('customer_id', $id)
-        ->getFirstItem();
-        return $orderCollection;
+        ->setOrder('created_at', 'DESC')
+        ->setPageSize(1);
 
+    $order = $collection->getFirstItem();
+
+    if (!$order->getId()) {
+        return null;
     }
+
+    return [
+        'order_id' => $order->getId(),
+        'status' => $order->getStatus(),
+        'Store Id' => $order->getStoreId(),
+        'total' => $order->getGrandTotal(),
+        'created_at' => $order->getCreatedAt(),
+        'shipping_method' => $order->getShippingMethod(),
+    ];
+}
+
+    
 }

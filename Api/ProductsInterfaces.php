@@ -34,25 +34,24 @@ interface ProductsInterfaces
    * @return array
    */
   public function getCategoriesList();
-   /**
+  /**
    * Get all Customer Info list
    *  * @param int $id  
    * @return array
    */
   public function getCustomerInfoById($id);
 
-   /**
+  /**
    * Get all Customer Info list
   
    * @return string
    */
   public function getOrderCount();
-  /**
-   * Get  Customer last order
-   *  * @param int $id  
-   * @return array
-   */
+   /**
+     * Get Customer's last order
+     * 
+     * @param int $id
+     * @return Magento\Sales\Api\Data\OrderInterface;
+     */
   public function getCustomerlastOrder($id);
-
-
 }
